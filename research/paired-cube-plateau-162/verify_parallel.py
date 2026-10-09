@@ -91,7 +91,7 @@ def main():
     commit=git('rev-parse','HEAD',cwd=template).decode().strip()
     need(not git('status','--porcelain',cwd=template),'snapshot must be clean')
     package=str(HERE.relative_to(ROOT)/'verify.py')
-    commands={g:['make',g] for g in groups};commands['selected-finite-package']=[sys.executable,'-B',package]
+    commands={g:['make',g] for g in groups};commands['selected-finite-package']=[sys.executable,'-B',package,'--jobs','1']
     # Start historical finite searches and complete tests early; their slower
     # tail otherwise dominates the run. The coverage record keeps native order.
     priority=['verify-research','verify-tests','verify-joint','verify-producers',

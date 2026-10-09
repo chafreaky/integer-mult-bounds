@@ -34,6 +34,12 @@ python3 -B research/paired-cube-plateau-162/verify.py
 
 It checks the pinned source closure, signed complex scalar identities, every physical source/target/dirty column in both shear orientations, frame containment and chronology, the complete bit F2 identity and its defining integer decoder, both paid moment bounds, full finite group/router/row charges, 47 strict inequalities, seven margins and adverse controls. It reconstructs the saved certificate and rejects source drift. No foreign producer is executed by this package verifier. `--write` is an authoring operation used before the source freeze.
 
+The independent complex and bit checks run concurrently in two child processes.
+Use `--jobs 1` for sequential execution or `--jobs 2` explicitly for concurrency.
+Both modes perform every check and reproduce the same canonical certificate.
+The full repository gate below passes `--jobs 1` to this verifier to preserve
+its limit on nested workers.
+
 There are 1,176 distinct new integer Gram determinants, some as large as 103 bits. The exact prime witness factors each determinant into powers of 2, 3 and 5 and a positive residual below 2^80. Thus every retained prime q>2^80 still makes every new frame nondegenerate, with no change to the bad-class allowance. `bit/prime_witnesses.py` reproduces the factor identities and rejects malformed witnesses.
 
 The full repository gate uses the isolated snapshot technique from PR154:

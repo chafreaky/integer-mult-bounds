@@ -2,6 +2,7 @@
 """Read-only aggregate verification of the selected joint finite witness."""
 from hashlib import sha256
 from pathlib import Path
+from concurrent.futures import ThreadPoolExecutor
 import argparse
 import json
 import subprocess
@@ -29,11 +30,15 @@ def run(relative):
     return json.loads(result.stdout)
 
 
-def build():
+def build(jobs=2):
     print('Checking new signed complex word, all formal columns, frames and exact moment.',file=sys.stderr,flush=True)
-    complex_result=run('complex/prove.py')
     print('Checking selected PR161 bit frames, full F2 identity and paid moment envelope.',file=sys.stderr,flush=True)
-    bit_result=run('bit/prove.py')
+    # The independent children run in separate interpreters and write no shared output.
+    with ThreadPoolExecutor(max_workers=jobs) as pool:
+        complex_job=pool.submit(run,'complex/prove.py')
+        bit_job=pool.submit(run,'bit/prove.py')
+        complex_result=complex_job.result()
+        bit_result=bit_job.result()
     sys.path.insert(0,str(HERE/'arithmetic'))
     from certificate import certificate
     arithmetic=certificate(complex_result['profile'],complex_result['physical'])
@@ -49,10 +54,12 @@ def build():
 def main():
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--write',action='store_true',help='Authoring only: write the canonical derived certificate before freezing SOURCE.json')
+    parser.add_argument('--jobs',type=int,choices=(1,2),default=2,
+                        help='Independent child processes (default: 2; use 1 inside a parallel suite)')
     args=parser.parse_args()
     assert not sys.flags.optimize,'Assertions must remain enabled'
     before=None if args.write else pins()
-    result=build();target=HERE/'certificate.json'
+    result=build(args.jobs);target=HERE/'certificate.json'
     if args.write:target.write_text(json.dumps(result,indent=2,sort_keys=True)+'\n')
     else:
         assert result==json.loads(target.read_text()),'Canonical certificate does not reproduce'
